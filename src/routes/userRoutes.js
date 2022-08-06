@@ -1,18 +1,12 @@
-const express = require('express');
-const userRoutes = express.Router();
+import { Router } from 'express';
+const userRoutes = Router();
 
-const userControllers = require('./../controller/userControllers');
+import { getUsers, getUserById, postUsers, patchUser, patchUserAvatar } from '../controller/userControllers.js';
 
-userRoutes.get('/', userControllers.getUsers);
-userRoutes.get('/:id', userControllers.getUserById);
-userRoutes.post('/', userControllers.postUsers);
-userRoutes.patch('/me', userControllers.patchUser);
-userRoutes.patch('/me/avatar', userControllers.patchUserAvatar);
+userRoutes.get('/', getUsers);
+userRoutes.get('/:id', getUserById);
+userRoutes.post('/', postUsers);
+userRoutes.patch('/me', patchUser);
+userRoutes.patch('/me/avatar', patchUserAvatar);
 
-
-module.exports = {
-  userRoutes,
-}
-
-
-//patchUser
+export default userRoutes

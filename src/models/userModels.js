@@ -1,19 +1,18 @@
-const mongoose = require('mongoose');
+import pkg from 'mongoose';
+const { Schema, model } = pkg;
 
-const userSchema = new mongoose.Schema({
+const userSchema = new Schema({
   name: {
     type: String,
     require: true,
     minlength: [2, 'Минимальная длина 2 символа'],
     maxlength: [30, 'Максимальная длина 30 символов'],
-    default: "MISHA",
   },
   about: {
     type: String,
     require: true,
     minlength: [2, 'Минимальная длина 2 символа'],
     maxlength: [30, 'Максимальная длина 30 символов'],
-    default: "IVANOV",
   },
   avatar: {
     type: String,
@@ -21,4 +20,5 @@ const userSchema = new mongoose.Schema({
   },
 })
 
-exports.User = mongoose.model('user', userSchema);
+const User = model('user', userSchema);
+export default User;

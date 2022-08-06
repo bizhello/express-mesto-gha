@@ -1,58 +1,64 @@
-const {User} = require('./../models/userModels');
-const {OK, CREATED} = require('../utils/constant');
+/* eslint-disable import/extensions */
+import User from '../models/userModels.js';
 
-exports.getUsers = async(req, res) => {
+export async function getUsers(req, res) {
   try {
     const users = await User.find({});
     res.send(users);
-    res.status(OK);
   } catch (error) {
-    errorMessage(err.name, req, res);
+    res.status(404);
+    res.send(error.message);
   }
 }
 
-exports.getUserById = async(req, res) => {
+export async function getUserById(req, res) {
   try {
     const user = await User.findById(req.params.id);
-    res.send(user);
-    res.status(OK);
+    if (user !== undefined) {
+      res.send(user);
+    }
   } catch (error) {
-    errorMessage(err.name, req, res);
+    res.status(404);
+    res.send(error.message);
   }
 }
 
-exports.postUsers = async(req, res) => {
+export async function postUsers(req, res) {
   try {
     const user = new User(req.body);
     await user.save();
     res.send(user);
-    res.status(CREATED);
   } catch (error) {
-      errorMessage(err.name, req, res);
+    res.status(404);
+    res.send(error.message);
   }
 }
 
-exports.patchUser = async(req, res) => {
+export async function patchUser(req, res) {
   try {
-    const user = await User.findById('62ea7c0fc2678588d91ae7ca');
-    user.name = req.body.name;
-    user.about = req.body.about;
-    await user.save();
-    res.send(user);
-    res.status(OK);
+    const user = await User.findById(req.user._id);
+    if (user !== null) {
+      user.name = req.body.name;
+      user.about = req.body.about;
+      await user.save();
+      res.send(user);
+    }
   } catch (error) {
-    errorMessage(err.name, req, res);
+    res.status(404);
+    res.send(error.message);
   }
 }
 
-exports.patchUserAvatar = async(req, res) => {
+export async function patchUserAvatar(req, res) {
   try {
-    const user = await User.findById('62ea7c0fc2678588d91ae7ca');
-    user.avatar = req.body.avatar;
-    await user.save();
-    res.send(user);
-    res.status(OK);
+    const user = await User.findById(req.user._id);
+    if (user !== null) {
+      user.avatar = req.body.avatar;
+      await user.save();
+      res.send(user);
+    }
   } catch (error) {
-    errorMessage(err.name, req, res);
+    res.status(404);
+    res.send(error.message);
   }
 }

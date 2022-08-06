@@ -1,62 +1,64 @@
-const {Card} = require('./../models/cardModels');
-const {User} = require('./../models/userModels');
-const {OK, CREATED} = require('../utils/constant');
+// eslint-disable-next-line import/extensions
+import Card from '../models/cardModels.js';
 
-exports.getCards = async(req, res) => {
+export async function getCards(req, res) {
   try {
     const cards = await Card.find({});
     res.send(cards);
-    res.status(OK);
   } catch (error) {
-    errorMessage(err.name, req, res);
+    res.status(404);
+    res.send(error.message);
   }
 }
 
-exports.postCards = async(req, res) => {
+export async function postCards(req, res) {
   try {
     const card = new Card(req.body);
-    card.owner = '62ea2b052fa7abf2e4372ef7';
+    card.owner = req.user._id;
     await card.save();
     res.send(card);
-    res.status(CREATED);
   } catch (error) {
-    errorMessage(err.name, req, res);
+    res.status(404);
+    res.send(error.message);
   }
 }
 
-exports.deleteCards = async(req, res) => {
+export async function deleteCards(req, res) {
   try {
     await Card.findByIdAndRemove(req.params.cardId);
-    res.send('DELETE');
-    res.status(OK);
+    res.send('DELETE CARD');
   } catch (error) {
-    errorMessage(err.name, req, res);
+    res.status(404);
+    res.send(error.message);
   }
 }
 
-exports.putCardsLike = async(req, res) => {
+export async function likeCard(req, res) {
   try {
-    const card = await Card.findById('62ea988ef83686406494ccbf');
-    const user = await User.findById('62ea7aaca9ea08a3cfe945ed');
-    card.likes.push(user);
-    await card.save();
-    res.send(card);
-    res.status(OK);
+    Card.findByIdAndUpdate(
+      req.params.cardId,
+      { $addToSet: { likes: req.user._id } },
+      { new: true },
+    );
+    const cards = await Card.find({});
+    res.send(cards);
   } catch (error) {
-    errorMessage(err.name, req, res);
+    res.status(404);
+    res.send(error.message);
   }
 }
 
-exports.deleteCardsLike = async(req, res) => {
+export async function dislikeCard(req, res) {
   try {
-    const card = await Card.findById('62ea988ef83686406494ccbf');
-    const user = await User.findById('62ea7aaca9ea08a3cfe945ed');
-    const newCardLikes = card.likes.filter(n => JSON.parse(JSON.stringify(n._id)) !== JSON.parse(JSON.stringify(user._id)));
-    card.likes = newCardLikes;
-    await card.save();
-    res.send(card);
-    res.status(OK);
+    Card.findByIdAndUpdate(
+      req.params.cardId,
+      { $pull: { likes: req.user._id } },
+      { new: true },
+    );
+    const cards = await Card.find({});
+    res.send(cards);
   } catch (error) {
-    errorMessage(err.name, req, res);
+    res.status(404);
+    res.send(error.message);
   }
 }
