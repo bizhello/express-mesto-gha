@@ -1,25 +1,28 @@
-/* eslint-disable import/extensions */
 import User from '../models/userModels.js';
+import errors from '../../utils/errors.js';
 
 export async function getUsers(req, res) {
   try {
     const users = await User.find({});
     res.send(users);
   } catch (error) {
-    res.status(404);
-    res.send(error.message);
+    res.status(500);
+    res.send(errors.server);
   }
 }
 
 export async function getUserById(req, res) {
   try {
     const user = await User.findById(req.params.id);
-    if (user !== undefined) {
+    if (user !== null) {
       res.send(user);
+    } else {
+      res.status(500);
+      res.send(errors.server);
     }
   } catch (error) {
-    res.status(404);
-    res.send(error.message);
+    res.status(400);
+    res.send(errors.user);
   }
 }
 
@@ -29,8 +32,13 @@ export async function postUsers(req, res) {
     await user.save();
     res.send(user);
   } catch (error) {
-    res.status(404);
-    res.send(error.message);
+    if (error.name === 'ValidationError') {
+      res.status(400);
+      res.send(errors.user);
+    } else {
+      res.status(500);
+      res.send(errors.server);
+    }
   }
 }
 
@@ -42,10 +50,18 @@ export async function patchUser(req, res) {
       user.about = req.body.about;
       await user.save();
       res.send(user);
+    } else {
+      res.status(404);
+      res.send(errors.url);
     }
   } catch (error) {
-    res.status(404);
-    res.send(error.message);
+    if (error.name === 'ValidationError') {
+      res.status(400);
+      res.send(errors.user);
+    } else {
+      res.status(500);
+      res.send(errors.server);
+    }
   }
 }
 
@@ -56,9 +72,17 @@ export async function patchUserAvatar(req, res) {
       user.avatar = req.body.avatar;
       await user.save();
       res.send(user);
+    } else {
+      res.status(404);
+      res.send(errors.url);
     }
   } catch (error) {
-    res.status(404);
-    res.send(error.message);
+    if (error.name === 'ValidationError') {
+      res.status(400);
+      res.send(errors.user);
+    } else {
+      res.status(500);
+      res.send(errors.server);
+    }
   }
 }

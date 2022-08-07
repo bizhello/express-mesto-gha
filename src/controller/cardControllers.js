@@ -1,13 +1,14 @@
-// eslint-disable-next-line import/extensions
 import Card from '../models/cardModels.js';
+import User from '../models/userModels.js';
+import errors from '../../utils/errors.js';
 
 export async function getCards(req, res) {
   try {
     const cards = await Card.find({});
     res.send(cards);
   } catch (error) {
-    res.status(404);
-    res.send(error.message);
+    res.status(500);
+    res.send(errors.server);
   }
 }
 
@@ -18,47 +19,69 @@ export async function postCards(req, res) {
     await card.save();
     res.send(card);
   } catch (error) {
-    res.status(404);
-    res.send(error.message);
+    if (error.name === 'ValidationError') {
+      res.status(400);
+      res.send(errors.user);
+    } else {
+      res.status(500);
+      res.send(errors.server);
+    }
   }
 }
 
 export async function deleteCards(req, res) {
   try {
-    await Card.findByIdAndRemove(req.params.cardId);
-    res.send('DELETE CARD');
+    if (await Card.findById(req.params.cardId)) {
+      await Card.findByIdAndRemove(req.params.cardId);
+      res.send('DELETE CARD');
+    } else {
+      res.status(404);
+      res.send(errors.url);
+    }
   } catch (error) {
-    res.status(404);
-    res.send(error.message);
+    res.status(500);
+    res.send(errors.server);
   }
 }
 
 export async function likeCard(req, res) {
   try {
-    Card.findByIdAndUpdate(
-      req.params.cardId,
-      { $addToSet: { likes: req.user._id } },
-      { new: true },
-    );
-    const cards = await Card.find({});
-    res.send(cards);
+    const card = await Card.findById(req.params.cardId);
+    const user = await User.findById(req.user._id);
+    if (card) {
+      await Card.findByIdAndUpdate(
+        req.params.cardId,
+        { $addToSet: { likes: user } },
+        { new: true },
+      );
+      res.send('Лайк поставлен');
+    } else {
+      res.status(500);
+      res.send(errors.server);
+    }
   } catch (error) {
-    res.status(404);
-    res.send(error.message);
+    res.status(400);
+    res.send(errors.user);
   }
 }
 
 export async function dislikeCard(req, res) {
   try {
-    Card.findByIdAndUpdate(
-      req.params.cardId,
-      { $pull: { likes: req.user._id } },
-      { new: true },
-    );
-    const cards = await Card.find({});
-    res.send(cards);
+    const card = await Card.findById(req.params.cardId);
+    const user = await User.findById(req.user._id);
+    if (card) {
+      await Card.findByIdAndUpdate(
+        req.params.cardId,
+        { $pull: { likes: user } },
+        { new: true },
+      );
+      res.send('Лайк убран');
+    } else {
+      res.status(500);
+      res.send(errors.server);
+    }
   } catch (error) {
-    res.status(404);
-    res.send(error.message);
+    res.status(400);
+    res.send(errors.user);
   }
 }

@@ -1,7 +1,9 @@
 import { Router } from 'express';
-const cardRoutes = Router();
+import {
+  getCards, postCards, deleteCards, likeCard, dislikeCard,
+} from '../controller/cardControllers.js';
 
-import { getCards, postCards, deleteCards, likeCard, dislikeCard } from '../controller/cardControllers.js';
+const cardRoutes = Router();
 
 cardRoutes.get('/', getCards);
 cardRoutes.post('/', postCards);

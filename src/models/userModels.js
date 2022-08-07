@@ -1,4 +1,5 @@
 import pkg from 'mongoose';
+
 const { Schema, model } = pkg;
 
 const userSchema = new Schema({
@@ -18,7 +19,7 @@ const userSchema = new Schema({
     type: String,
     require: true,
   },
-})
+});
 
 const User = model('user', userSchema);
 export default User;
