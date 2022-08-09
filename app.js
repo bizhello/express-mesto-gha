@@ -1,7 +1,7 @@
-import express from 'express';
-import mongoose from 'mongoose';
-import dotenv from 'dotenv';
-import routes from './src/routes/index.js';
+const express = require('express');
+const mongoose = require('mongoose');
+const dotenv = require('dotenv');
+const { routes } = require('./src/routes/index');
 
 dotenv.config();
 
@@ -10,7 +10,7 @@ const { PORT = 3000 } = process.env;
 
 app.use((req, res, next) => {
   req.user = {
-    _id: '62ea7aaca9ea08a3cfe945ed',
+    _id: '62ea2b94b14bc4e6c5c92c35',
   };
 
   next();

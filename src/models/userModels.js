@@ -1,6 +1,6 @@
-import pkg from 'mongoose';
+const mongoose = require('mongoose');
 
-const { Schema, model } = pkg;
+const { Schema, model } = mongoose;
 
 const userSchema = new Schema({
   name: {
@@ -18,8 +18,10 @@ const userSchema = new Schema({
   avatar: {
     type: String,
     require: true,
+    minlength: [2, 'Минимальная длина 2 символа'],
+    maxlength: [30, 'Максимальная длина 30 символов'],
   },
 });
 
-const User = model('user', userSchema);
-export default User;
+userSchema.set('validateBeforeUpdate', false);
+module.exports.User = model('user', userSchema);

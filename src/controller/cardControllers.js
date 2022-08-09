@@ -1,87 +1,96 @@
-import Card from '../models/cardModels.js';
-import User from '../models/userModels.js';
-import errors from '../../utils/errors.js';
+const { Card } = require('../models/cardModels');
+const { errors } = require('../../utils/errors');
 
-export async function getCards(req, res) {
+async function getCards(req, res) {
   try {
     const cards = await Card.find({});
     res.send(cards);
   } catch (error) {
-    res.status(500);
-    res.send(errors.server);
+    res.status(errors.server[0]);
+    res.send(errors.server[1]);
   }
 }
 
-export async function postCards(req, res) {
+async function postCards(req, res) {
   try {
     const card = new Card(req.body);
     card.owner = req.user._id;
-    await card.save();
-    res.send(card);
+    card.validate((err) => {
+      if (err) {
+        res.status(errors.user[0]);
+        res.send('Введены некорректные данные');
+      } else {
+        card.save();
+        res.send(card);
+      }
+    });
   } catch (error) {
-    if (error.name === 'ValidationError') {
-      res.status(400);
-      res.send(errors.user);
+    res.status(errors.server[0]);
+    res.send(errors.server[1]);
+  }
+}
+
+async function deleteCards(req, res) {
+  try {
+    if (await Card.findByIdAndRemove(req.params.cardId) !== null) {
+      res.send('Карточка удалена');
     } else {
-      res.status(500);
-      res.send(errors.server);
+      // res.status(errors.url[0]);
+      res.send('Карточка была уже удалена');
+    }
+  } catch (error) {
+    if (error.name === 'CastError') {
+      res.status(errors.user[0]);
+      res.send('id карточки задано неверно!');
+    } else {
+      res.status(errors.server[0]);
+      res.send(errors.server[1]);
     }
   }
 }
 
-export async function deleteCards(req, res) {
+async function likeCard(req, res) {
   try {
-    if (await Card.findById(req.params.cardId)) {
-      await Card.findByIdAndRemove(req.params.cardId);
-      res.send('DELETE CARD');
-    } else {
-      res.status(404);
-      res.send(errors.url);
-    }
+    await Card.findByIdAndUpdate(
+      req.params.cardId,
+      { $addToSet: { likes: req.user._id } },
+      { new: true },
+    );
+    res.send('Лайк поставлен');
   } catch (error) {
-    res.status(500);
-    res.send(errors.server);
+    if (error.name === 'CastError') {
+      res.status(errors.url[0]);
+      res.send('Карточка не найдена');
+    } else {
+      res.status(errors.server[0]);
+      res.send(errors.server[1]);
+    }
   }
 }
 
-export async function likeCard(req, res) {
+async function dislikeCard(req, res) {
   try {
-    const card = await Card.findById(req.params.cardId);
-    const user = await User.findById(req.user._id);
-    if (card) {
-      await Card.findByIdAndUpdate(
-        req.params.cardId,
-        { $addToSet: { likes: user } },
-        { new: true },
-      );
-      res.send('Лайк поставлен');
-    } else {
-      res.status(500);
-      res.send(errors.server);
-    }
+    await Card.findByIdAndUpdate(
+      req.params.cardId,
+      { $pull: { likes: req.user._id } },
+      { new: true },
+    );
+    res.send('Лайк убран');
   } catch (error) {
-    res.status(400);
-    res.send(errors.user);
+    if (error.name === 'CastError') {
+      res.status(errors.url[0]);
+      res.send('Карточка не найдена');
+    } else {
+      res.status(errors.server[0]);
+      res.send(errors.server[1]);
+    }
   }
 }
 
-export async function dislikeCard(req, res) {
-  try {
-    const card = await Card.findById(req.params.cardId);
-    const user = await User.findById(req.user._id);
-    if (card) {
-      await Card.findByIdAndUpdate(
-        req.params.cardId,
-        { $pull: { likes: user } },
-        { new: true },
-      );
-      res.send('Лайк убран');
-    } else {
-      res.status(500);
-      res.send(errors.server);
-    }
-  } catch (error) {
-    res.status(400);
-    res.send(errors.user);
-  }
-}
+module.exports = {
+  getCards,
+  postCards,
+  deleteCards,
+  likeCard,
+  dislikeCard,
+};

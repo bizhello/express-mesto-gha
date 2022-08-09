@@ -1,8 +1,7 @@
-/* eslint-disable import/extensions */
-import express from 'express';
-import bodyParser from 'body-parser';
-import userRoutes from './userRoutes.js';
-import cardRoutes from './cardRoutes.js';
+const express = require('express');
+const bodyParser = require('body-parser');
+const { userRoutes } = require('./userRoutes');
+const { cardRoutes } = require('./cardRoutes');
 
 const routes = express.Router();
 
@@ -10,4 +9,6 @@ routes.use(bodyParser.json());
 routes.use('/users', userRoutes);
 routes.use('/cards', cardRoutes);
 
-export default routes;
+module.exports = {
+  routes,
+};

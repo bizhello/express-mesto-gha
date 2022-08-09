@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
 
 const { ObjectId } = mongoose.Schema.Types;
 const cardSchema = new mongoose.Schema({
@@ -20,12 +20,13 @@ const cardSchema = new mongoose.Schema({
   likes: [{
     type: ObjectId,
     ref: 'user',
-    default: {},
+    default: [],
   }],
   createdAt: {
     type: Date,
     default: Date.now,
   },
 });
-const Card = mongoose.model('card', cardSchema);
-export default Card;
+
+cardSchema.set('validateBeforeSave', false);
+module.exports.Card = mongoose.model('card', cardSchema);

@@ -1,9 +1,9 @@
-import { Router } from 'express';
-import {
+const express = require('express');
+const {
   getCards, postCards, deleteCards, likeCard, dislikeCard,
-} from '../controller/cardControllers.js';
+} = require('../controller/cardControllers');
 
-const cardRoutes = Router();
+const cardRoutes = express.Router();
 
 cardRoutes.get('/', getCards);
 cardRoutes.post('/', postCards);
@@ -11,4 +11,6 @@ cardRoutes.delete('/:cardId', deleteCards);
 cardRoutes.put('/:cardId/likes', likeCard);
 cardRoutes.delete('/:cardId/likes', dislikeCard);
 
-export default cardRoutes;
+module.exports = {
+  cardRoutes,
+};

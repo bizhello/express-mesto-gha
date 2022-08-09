@@ -4,8 +4,8 @@
   "description": "Проект Mesto фронтенд + бэкенд",
   "main": "app.js",
   "scripts": {
-    "dev": "nodemon app.js",
-    "start": "node app.js",
+    "dev": "nodemon app.mjs",
+    "start": "node -experimental-modules app.mjs",
     "lint": "npx eslint . --ext .js"
   },
   "repository": {
@@ -31,5 +31,5 @@
     "eslint-plugin-import": "^2.26.0",
     "nodemon": "^2.0.19"
   },
-  "type": "module"
+  "type": "commonjs"
 }
