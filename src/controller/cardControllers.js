@@ -25,8 +25,13 @@ async function postCards(req, res) {
       }
     });
   } catch (error) {
-    res.status(errors.server[0]);
-    res.send(errors.server[1]);
+    if (error.name === 'ValidationError') {
+      res.status(errors.user[0]);
+      res.send(errors.user[1]);
+    } else {
+      res.status(errors.server[0]);
+      res.send(errors.server[1]);
+    }
   }
 }
 
@@ -35,7 +40,7 @@ async function deleteCards(req, res) {
     if (await Card.findByIdAndRemove(req.params.cardId) !== null) {
       res.send('Карточка удалена');
     } else {
-      // res.status(errors.url[0]);
+      res.status(errors.url[0]);
       res.send('Карточка была уже удалена');
     }
   } catch (error) {
@@ -51,12 +56,18 @@ async function deleteCards(req, res) {
 
 async function likeCard(req, res) {
   try {
-    await Card.findByIdAndUpdate(
-      req.params.cardId,
-      { $addToSet: { likes: req.user._id } },
-      { new: true },
-    );
-    res.send('Лайк поставлен');
+    const card = await Card.findById(req.params.cardId);
+    if (card) {
+      await Card.findByIdAndUpdate(
+        req.params.cardId,
+        { $addToSet: { likes: req.user._id } },
+        { new: true },
+      );
+      res.send('Лайк поставлен');
+    } else {
+      res.status(errors.url[0]);
+      res.send(errors.url[1]);
+    }
   } catch (error) {
     if (error.name === 'CastError') {
       res.status(errors.url[0]);
@@ -70,12 +81,18 @@ async function likeCard(req, res) {
 
 async function dislikeCard(req, res) {
   try {
-    await Card.findByIdAndUpdate(
-      req.params.cardId,
-      { $pull: { likes: req.user._id } },
-      { new: true },
-    );
-    res.send('Лайк убран');
+    const card = await Card.findById(req.params.cardId);
+    if (card) {
+      await Card.findByIdAndUpdate(
+        req.params.cardId,
+        { $pull: { likes: req.user._id } },
+        { new: true },
+      );
+      res.send('Лайк убран');
+    } else {
+      res.status(errors.url[0]);
+      res.send(errors.url[1]);
+    }
   } catch (error) {
     if (error.name === 'CastError') {
       res.status(errors.url[0]);
