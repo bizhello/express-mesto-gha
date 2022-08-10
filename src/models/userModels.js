@@ -23,5 +23,5 @@ const userSchema = new Schema({
   },
 });
 
-userSchema.set('validateBeforeUpdate', false);
+// userSchema.set('validateBeforeUpdate', false);
 module.exports.User = model('user', userSchema);

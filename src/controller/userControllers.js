@@ -13,25 +13,20 @@ async function getUsers(req, res) {
 
 async function getUserById(req, res) {
   try {
-    const user = await User.findById(req.params.id);
-    if (user !== null) {
-      res.send(user);
-    } else {
-      res.status(errors.url[0]);
-      res.send('Пользователь не найден');
-    }
+    const user = await User.findById(req.params.id).orFail();
+    res.send(user);
   } catch (error) {
     if (error.name === 'CastError') {
-      res.status(errors.user[0]);
-      res.send('Введены некорректные данные');
+      res.status(errors.user[0])
+        .send({ message: 'Введены некорректные данные' });
     } else {
-      res.status(errors.server[0]);
-      res.send(errors.server[1]);
+      res.status(errors.server[0])
+        .send({ message: errors.server[1] });
     }
   }
 }
 
-async function postUsers(req, res) {
+async function postUser(req, res) {
   try {
     const user = new User(req.body);
     user.validate((err) => {
@@ -56,22 +51,15 @@ async function postUsers(req, res) {
 
 async function patchUser(req, res) {
   try {
-    const user = await User.findById(req.user._id);
-    user.name = req.body.name;
-    user.about = req.body.about;
-    user.validate((err) => {
-      if (err) {
-        res.status(errors.user[0]);
-        res.send('Введены некорректные данные');
-      } else {
-        user.save();
-        res.send('Данные успешно изменены');
-      }
+    await User.findOneAndUpdate(req.user, req.body, {
+      new: true,
+      runValidators: true,
     });
+    res.send('Данные успешно изменены');
   } catch (error) {
-    if (error.name === 'ValidatorError') {
+    if (error.name === 'ValidationError') {
       res.status(errors.user[0]);
-      res.send(errors.user[1]);
+      res.send('Введены некорректные данные');
     } else {
       res.status(errors.server[0]);
       res.send(errors.server[1]);
@@ -81,31 +69,26 @@ async function patchUser(req, res) {
 
 async function patchUserAvatar(req, res) {
   try {
-    const user = await User.findById(req.user._id);
-    user.avatar = req.body.avatar;
-    user.validate((err) => {
-      if (err) {
-        res.status(errors.user[0]);
-        res.send('Введены некорректные данные');
-      } else {
-        user.save();
-        res.send('Данные успешно изменены');
-      }
+    await User.findOneAndUpdate(req.user._id, req.body, {
+      runValidators: true,
+      new: true,
     });
+    res.send('Данные успешно изменены');
   } catch (error) {
     if (error.name === 'ValidationError') {
       res.status(errors.user[0]);
-      res.send(errors.user[1]);
+      res.send('Введены некорректные данные');
     } else {
       res.status(errors.server[0]);
       res.send(errors.server[1]);
     }
   }
 }
+
 module.exports = {
   getUsers,
   getUserById,
-  postUsers,
+  postUser,
   patchUser,
   patchUserAvatar,
 };

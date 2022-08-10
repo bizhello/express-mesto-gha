@@ -28,5 +28,5 @@ const cardSchema = new mongoose.Schema({
   },
 });
 
-cardSchema.set('validateBeforeSave', false);
+// cardSchema.set('validateBeforeSave', false);
 module.exports.Card = mongoose.model('card', cardSchema);
