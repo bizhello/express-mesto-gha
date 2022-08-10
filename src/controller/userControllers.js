@@ -1,5 +1,5 @@
 const { User } = require('../models/userModels');
-const { fncCstErrors } = require('../../utils/errors');
+const { fncCstErrors, notFound } = require('../../utils/errors');
 
 async function getUsers(req, res) {
   try {
@@ -24,7 +24,7 @@ async function postUser(req, res) {
     const user = new User(req.body);
     user.validate((err) => {
       if (err) {
-        res.status(400).send('Введены некорректные данные');
+        res.status(notFound).send('Введены некорректные данные');
       } else {
         user.save();
         res.send(user);

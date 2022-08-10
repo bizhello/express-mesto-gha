@@ -1,5 +1,5 @@
 const { Card } = require('../models/cardModels');
-const { fncCstErrors } = require('../../utils/errors');
+const { fncCstErrors, notFound } = require('../../utils/errors');
 
 async function getCards(req, res) {
   try {
@@ -16,8 +16,7 @@ async function postCards(req, res) {
     card.owner = req.user._id;
     card.validate((err) => {
       if (err) {
-        res.status(400);
-        res.send('Введены некорректные данные');
+        res.status(notFound).send({ message: 'Введены некорректные данные' });
       } else {
         card.save();
         res.send(card);
@@ -33,8 +32,7 @@ async function deleteCards(req, res) {
     if (await Card.findByIdAndRemove(req.params.cardId) !== null) {
       res.send('Карточка удалена');
     } else {
-      res.status(400);
-      res.send('Карточка была уже удалена');
+      res.status(notFound).send({ message: 'Карточка была уже удалена' });
     }
   } catch (error) {
     fncCstErrors(error, res);
@@ -50,10 +48,9 @@ async function likeCard(req, res) {
         { $addToSet: { likes: req.user._id } },
         { new: true },
       );
-      res.send('Лайк поставлен');
+      res.send({ message: 'Лайк поставлен' });
     } else {
-      res.status(400);
-      res.send('Ошибка');
+      res.status(notFound).send({ message: 'Данные по этому id не найдены!' });
     }
   } catch (error) {
     fncCstErrors(error, res);
@@ -69,10 +66,9 @@ async function dislikeCard(req, res) {
         { $pull: { likes: req.user._id } },
         { new: true },
       );
-      res.send('Лайк убран');
+      res.send({ message: 'Лайк убран' });
     } else {
-      res.status(400);
-      res.send('Ошибка');
+      res.status(notFound).send({ message: 'Данные по этому id не найдены!' });
     }
   } catch (error) {
     fncCstErrors(error, res);
