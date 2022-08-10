@@ -1,13 +1,12 @@
 const { User } = require('../models/userModels');
-const { errors } = require('../../utils/errors');
+const { fncCstErrors } = require('../../utils/errors');
 
 async function getUsers(req, res) {
   try {
     const users = await User.find({});
     res.send(users);
   } catch (error) {
-    res.status(errors.server[0]);
-    res.send(errors.server[1]);
+    fncCstErrors(error, res);
   }
 }
 
@@ -16,13 +15,7 @@ async function getUserById(req, res) {
     const user = await User.findById(req.params.id).orFail();
     res.send(user);
   } catch (error) {
-    if (error.name === 'CastError') {
-      res.status(errors.user[0])
-        .send({ message: 'Введены некорректные данные' });
-    } else {
-      res.status(errors.server[0])
-        .send({ message: errors.server[1] });
-    }
+    fncCstErrors(error, res);
   }
 }
 
@@ -31,21 +24,14 @@ async function postUser(req, res) {
     const user = new User(req.body);
     user.validate((err) => {
       if (err) {
-        res.status(errors.user[0]);
-        res.send('Введены некорректные данные');
+        res.status(400).send('Введены некорректные данные');
       } else {
         user.save();
         res.send(user);
       }
     });
   } catch (error) {
-    if (error.name === 'ValidationError') {
-      res.status(errors.user[0]);
-      res.send('Введены некорректные данные');
-    } else {
-      res.status(errors.server[0]);
-      res.send(errors.server[1]);
-    }
+    fncCstErrors(error, res);
   }
 }
 
@@ -57,13 +43,7 @@ async function patchUser(req, res) {
     });
     res.send('Данные успешно изменены');
   } catch (error) {
-    if (error.name === 'ValidationError') {
-      res.status(errors.user[0]);
-      res.send('Введены некорректные данные');
-    } else {
-      res.status(errors.server[0]);
-      res.send(errors.server[1]);
-    }
+    fncCstErrors(error, res);
   }
 }
 
@@ -75,13 +55,7 @@ async function patchUserAvatar(req, res) {
     });
     res.send('Данные успешно изменены');
   } catch (error) {
-    if (error.name === 'ValidationError') {
-      res.status(errors.user[0]);
-      res.send('Введены некорректные данные');
-    } else {
-      res.status(errors.server[0]);
-      res.send(errors.server[1]);
-    }
+    fncCstErrors(error, res);
   }
 }
 

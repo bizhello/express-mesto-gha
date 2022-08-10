@@ -1,13 +1,12 @@
 const { Card } = require('../models/cardModels');
-const { errors } = require('../../utils/errors');
+const { fncCstErrors } = require('../../utils/errors');
 
 async function getCards(req, res) {
   try {
     const cards = await Card.find({});
     res.send(cards);
   } catch (error) {
-    res.status(errors.server[0]);
-    res.send(errors.server[1]);
+    fncCstErrors(error, res);
   }
 }
 
@@ -17,7 +16,7 @@ async function postCards(req, res) {
     card.owner = req.user._id;
     card.validate((err) => {
       if (err) {
-        res.status(errors.user[0]);
+        res.status(400);
         res.send('Введены некорректные данные');
       } else {
         card.save();
@@ -25,13 +24,7 @@ async function postCards(req, res) {
       }
     });
   } catch (error) {
-    if (error.name === 'ValidationError') {
-      res.status(errors.user[0]);
-      res.send(errors.user[1]);
-    } else {
-      res.status(errors.server[0]);
-      res.send(errors.server[1]);
-    }
+    fncCstErrors(error, res);
   }
 }
 
@@ -40,17 +33,11 @@ async function deleteCards(req, res) {
     if (await Card.findByIdAndRemove(req.params.cardId) !== null) {
       res.send('Карточка удалена');
     } else {
-      res.status(errors.url[0]);
+      res.status(400);
       res.send('Карточка была уже удалена');
     }
   } catch (error) {
-    if (error.name === 'CastError') {
-      res.status(errors.user[0]);
-      res.send('id карточки задано неверно!');
-    } else {
-      res.status(errors.server[0]);
-      res.send(errors.server[1]);
-    }
+    fncCstErrors(error, res);
   }
 }
 
@@ -65,17 +52,11 @@ async function likeCard(req, res) {
       );
       res.send('Лайк поставлен');
     } else {
-      res.status(errors.url[0]);
-      res.send(errors.url[1]);
+      res.status(400);
+      res.send('Ошибка');
     }
   } catch (error) {
-    if (error.name === 'CastError') {
-      res.status(errors.url[0]);
-      res.send('Карточка не найдена');
-    } else {
-      res.status(errors.server[0]);
-      res.send(errors.server[1]);
-    }
+    fncCstErrors(error, res);
   }
 }
 
@@ -90,17 +71,11 @@ async function dislikeCard(req, res) {
       );
       res.send('Лайк убран');
     } else {
-      res.status(errors.url[0]);
-      res.send(errors.url[1]);
+      res.status(400);
+      res.send('Ошибка');
     }
   } catch (error) {
-    if (error.name === 'CastError') {
-      res.status(errors.url[0]);
-      res.send('Карточка не найдена');
-    } else {
-      res.status(errors.server[0]);
-      res.send(errors.server[1]);
-    }
+    fncCstErrors(error, res);
   }
 }
 

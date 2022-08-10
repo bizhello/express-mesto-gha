@@ -1,5 +1,9 @@
-module.exports.errors = {
-  user: [400, 'Ошибка 400'],
-  url: [404, 'Ошибка 404'],
-  server: [500, 'Ошибка 500'],
+module.exports.fncCstErrors = (err, res) => {
+  if (err.name === 'ValidationError') {
+    res.status(400).send({ message: 'Данные не валидны' });
+  } else if (err.name === 'CastError') {
+    res.status(404).send({ message: 'Данные по id не найдены!' });
+  } else {
+    res.status(500).send({ message: 'Ошибка на сервере' });
+  }
 };
