@@ -1,5 +1,5 @@
 const { User } = require('../models/userModels');
-const { fncCstErrors, notFound } = require('../../utils/errors');
+const { fncCstErrors } = require('../../utils/errors');
 
 async function getUsers(req, res) {
   try {
@@ -19,29 +19,13 @@ async function getUserById(req, res) {
   }
 }
 
-async function postUser(req, res) {
-  try {
-    const user = new User(req.body);
-    user.validate((err) => {
-      if (err) {
-        res.status(notFound).send('Введены некорректные данные');
-      } else {
-        user.save();
-        res.send(user);
-      }
-    });
-  } catch (error) {
-    fncCstErrors(error, res);
-  }
-}
-
 async function patchUser(req, res) {
   try {
     await User.findOneAndUpdate(req.user, req.body, {
       new: true,
       runValidators: true,
     });
-    res.send('Данные успешно изменены');
+    res.send({ message: 'Данные успешно изменены' });
   } catch (error) {
     fncCstErrors(error, res);
   }
@@ -53,7 +37,20 @@ async function patchUserAvatar(req, res) {
       runValidators: true,
       new: true,
     });
-    res.send('Данные успешно изменены');
+    res.send({ message: 'Данные успешно изменены' });
+  } catch (error) {
+    fncCstErrors(error, res);
+  }
+}
+
+async function aboutMe(req, res) {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      res.send({ message: 'Пользователь с таким id не найден' });
+      return;
+    }
+    res.send(user);
   } catch (error) {
     fncCstErrors(error, res);
   }
@@ -62,7 +59,7 @@ async function patchUserAvatar(req, res) {
 module.exports = {
   getUsers,
   getUserById,
-  postUser,
+  aboutMe,
   patchUser,
   patchUserAvatar,
 };

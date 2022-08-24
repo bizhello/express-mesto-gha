@@ -1,4 +1,5 @@
 const express = require('express');
+const cookieParser = require('cookie-parser');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const rateLimit = require('express-rate-limit');
@@ -16,18 +17,15 @@ const limiter = rateLimit({
 });
 
 const app = express();
+
 app.disable('x-powered-by');
 
 const { PORT = 3000 } = process.env;
 
-app.use((req, res, next) => {
-  req.user = {
-    _id: '62ea2b94b14bc4e6c5c92c35',
-  };
-  next();
-});
+app.use(express.json());
 app.use(limiter);
 app.use(helmet());
+app.use(cookieParser());
 app.use(routes);
 
 async function main() {

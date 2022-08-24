@@ -29,10 +29,19 @@ async function postCards(req, res) {
 
 async function deleteCards(req, res) {
   try {
-    if (await Card.findByIdAndRemove(req.params.cardId) !== null) {
-      res.send('Карточка удалена');
+    const card = await Card.findById(req.params.cardId);
+    if (card === null) {
+      res.send({ message: 'Карточка была уже удалена' });
+      return;
+    }
+    if (req.user._id === card.owner) {
+      if (await Card.findByIdAndRemove(req.params.cardId) !== null) {
+        res.send({ message: 'Карточка удалена' });
+      } else {
+        res.status(notFound).send({ message: 'Карточка была уже удалена' });
+      }
     } else {
-      res.status(notFound).send({ message: 'Карточка была уже удалена' });
+      res.send({ message: 'Удалять можно только свои карточки' });
     }
   } catch (error) {
     fncCstErrors(error, res);

@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
+require('mongoose-type-url');
 
-const { ObjectId } = mongoose.Schema.Types;
+const { ObjectId, Url } = mongoose.Schema.Types;
 const cardSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -9,12 +10,13 @@ const cardSchema = new mongoose.Schema({
     maxlength: [30, 'Максимальная длина 30 символов'],
   },
   link: {
-    type: String,
-    require: true,
+    type: Url,
+    required: true,
   },
   owner: {
-    type: ObjectId,
-    ref: 'user',
+    // type: ObjectId,\
+    type: String,
+    // ref: 'user',
     require: true,
   },
   likes: [{
