@@ -1,9 +1,7 @@
 const mongoose = require('mongoose');
-const { isEmail } = require('validator');
-require('mongoose-type-url');
+const { isEmail, isURL } = require('validator');
 
 const { Schema, model } = mongoose;
-const { Url } = mongoose.Schema.Types;
 
 const userSchema = new Schema({
   email: {
@@ -30,7 +28,8 @@ const userSchema = new Schema({
     default: 'Исследователь',
   },
   avatar: {
-    type: Url,
+    type: String,
+    validate: { validator: isURL, message: 'Avatar is invalid' },
     default: 'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png',
   },
 });

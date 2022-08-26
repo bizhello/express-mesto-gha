@@ -1,54 +1,56 @@
 const { Card } = require('../models/cardModels');
-const { fncCstErrors, notFound } = require('../../utils/errors');
+const {
+  NotFoundError,
+  Forbidden,
+} = require('../../utils/errors');
 
-async function getCards(req, res) {
+async function getCards(req, res, next) {
   try {
     const cards = await Card.find({});
     res.send(cards);
   } catch (error) {
-    fncCstErrors(error, res);
+    next(error);
   }
 }
 
-async function postCards(req, res) {
+async function postCards(req, res, next) {
   try {
     const card = new Card(req.body);
     card.owner = req.user._id;
     card.validate((err) => {
       if (err) {
-        res.status(notFound).send({ message: 'Введены некорректные данные' });
+        res.status(400).send({ message: 'Введены некорректные данные' });
       } else {
         card.save();
-        res.send(card);
+        res.send({ message: 'Карточка успешно создана' });
       }
     });
   } catch (error) {
-    fncCstErrors(error, res);
+    next(error);
   }
 }
 
-async function deleteCards(req, res) {
+async function deleteCards(req, res, next) {
   try {
     const card = await Card.findById(req.params.cardId);
     if (card === null) {
-      res.send({ message: 'Карточка была уже удалена' });
-      return;
+      throw new NotFoundError('Карточка была уже удалена');
     }
     if (req.user._id === card.owner) {
       if (await Card.findByIdAndRemove(req.params.cardId) !== null) {
         res.send({ message: 'Карточка удалена' });
       } else {
-        res.status(notFound).send({ message: 'Карточка была уже удалена' });
+        throw new NotFoundError('Карточка была уже удалена');
       }
     } else {
-      res.send({ message: 'Удалять можно только свои карточки' });
+      throw new Forbidden('Удалять можно только свои карточки');
     }
   } catch (error) {
-    fncCstErrors(error, res);
+    next(error);
   }
 }
 
-async function likeCard(req, res) {
+async function likeCard(req, res, next) {
   try {
     const card = await Card.findById(req.params.cardId);
     if (card) {
@@ -58,15 +60,17 @@ async function likeCard(req, res) {
         { new: true },
       );
       res.send({ message: 'Лайк поставлен' });
-    } else {
-      res.status(notFound).send({ message: 'Данные по этому id не найдены!' });
     }
   } catch (error) {
-    fncCstErrors(error, res);
+    if (error.name === 'CastError') {
+      next(new NotFoundError('Данные по этому id не найдены'));
+    } else {
+      next(error);
+    }
   }
 }
 
-async function dislikeCard(req, res) {
+async function dislikeCard(req, res, next) {
   try {
     const card = await Card.findById(req.params.cardId);
     if (card) {
@@ -76,11 +80,13 @@ async function dislikeCard(req, res) {
         { new: true },
       );
       res.send({ message: 'Лайк убран' });
-    } else {
-      res.status(notFound).send({ message: 'Данные по этому id не найдены!' });
     }
   } catch (error) {
-    fncCstErrors(error, res);
+    if (error.name === 'CastError') {
+      next(new NotFoundError('Данные по этому id не найдены'));
+    } else {
+      next(error);
+    }
   }
 }
 

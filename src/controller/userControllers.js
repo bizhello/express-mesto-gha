@@ -1,25 +1,32 @@
 const { User } = require('../models/userModels');
-const { fncCstErrors } = require('../../utils/errors');
+const {
+  ValidationError,
+  NotFoundError,
+} = require('../../utils/errors');
 
-async function getUsers(req, res) {
+async function getUsers(req, res, next) {
   try {
     const users = await User.find({});
     res.send(users);
   } catch (error) {
-    fncCstErrors(error, res);
+    next(error);
   }
 }
 
-async function getUserById(req, res) {
+async function getUserById(req, res, next) {
   try {
     const user = await User.findById(req.params.id).orFail();
     res.send(user);
   } catch (error) {
-    fncCstErrors(error, res);
+    if (error.name === 'CastError') {
+      next(new NotFoundError('Пользователь с таким id не найден'));
+    } else {
+      next(error);
+    }
   }
 }
 
-async function patchUser(req, res) {
+async function patchUser(req, res, next) {
   try {
     await User.findOneAndUpdate(req.user, req.body, {
       new: true,
@@ -27,32 +34,39 @@ async function patchUser(req, res) {
     });
     res.send({ message: 'Данные успешно изменены' });
   } catch (error) {
-    fncCstErrors(error, res);
+    if (error.name === 'ValidationError') {
+      next(new ValidationError('Введены некорректные данные'));
+    } else {
+      next(error);
+    }
   }
 }
 
-async function patchUserAvatar(req, res) {
+async function patchUserAvatar(req, res, next) {
   try {
-    await User.findOneAndUpdate(req.user._id, req.body, {
+    await User.findOneAndUpdate(req.user, req.body, {
       runValidators: true,
       new: true,
     });
     res.send({ message: 'Данные успешно изменены' });
   } catch (error) {
-    fncCstErrors(error, res);
+    if (error.name === 'ValidationError') {
+      next(new ValidationError('Введены некорректные данные'));
+    } else {
+      next(error);
+    }
   }
 }
 
-async function aboutMe(req, res) {
+async function aboutMe(req, res, next) {
   try {
     const user = await User.findById(req.user._id);
     if (!user) {
-      res.send({ message: 'Пользователь с таким id не найден' });
-      return;
+      throw new NotFoundError('Пользователь с таким id не найден');
     }
     res.send(user);
   } catch (error) {
-    fncCstErrors(error, res);
+    next(error);
   }
 }
 

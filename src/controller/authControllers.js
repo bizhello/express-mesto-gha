@@ -1,22 +1,21 @@
 const bcrypt = require('bcrypt');
+
 const { User } = require('../models/userModels');
-const { fncCstErrors, notFound } = require('../../utils/errors');
+const { Unauthorized, Conflict, ValidationError } = require('../../utils/errors');
 const { getJwtToken } = require('../../utils/jwt');
 
 const SALT_ROUNDS = 10;
 
-async function login(req, res) {
+async function login(req, res, next) {
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ email }).select('+password');
     if (!user) {
-      res.send({ message: 'Неправильно указан логин и/или пароль!' });
-      return;
+      throw new Unauthorized('Неправильно указан логин и/или пароль!');
     }
     const match = await bcrypt.compare(password, user.password);
     if (!match) {
-      res.send({ message: 'Неправильно указан логин и/или пароль!' });
-      return;
+      throw new Unauthorized('Неправильно указан логин и/или пароль!');
     }
     const token = getJwtToken(user.id);
     res
@@ -24,38 +23,37 @@ async function login(req, res) {
         maxAge: 3600000,
         httpOnly: true,
       })
-      .send('Вход в систему');
-    // res.status(200).send({ token });
+      .send({ message: 'Вход в систему' });
   } catch (error) {
-    fncCstErrors(error, res);
+    next(error);
   }
 }
-async function createUser(req, res) {
+
+async function createUser(req, res, next) {
   try {
     const {
       email, password, name, about, avatar,
     } = req.body;
-    const user = await User.findOne({
-      email,
-    });
-    if (user) {
-      res.send({ message: 'Такой пользователь уже существует' });
-      return;
-    }
     const hash = await bcrypt.hash(password, SALT_ROUNDS);
-    const newUser = await new User({
+    const newUser = await User.create({
       email, password: hash, name, about, avatar,
     });
     newUser.validate((err) => {
       if (err) {
-        res.status(notFound).send({ message: 'Введены некорректные данные' });
+        res.status(400).send({ message: 'Введены некорректные данные' });
       } else {
         newUser.save();
-        res.send(newUser);
+        res.send({ message: 'Пользователь создан' });
       }
     });
   } catch (error) {
-    fncCstErrors(error, res);
+    if (error.code === 11000) {
+      next(new Conflict('Пользователь с таким email уже существует'));
+    } else if (error.name === 'ValidationError') {
+      next(new ValidationError('Введены некорректные данные'));
+    } else {
+      next(error);
+    }
   }
 }
 

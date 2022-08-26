@@ -1,4 +1,5 @@
 const express = require('express');
+const { celebrate, Joi } = require('celebrate');
 const {
   getUsers, getUserById, patchUser, patchUserAvatar, aboutMe,
 } = require('../controller/userControllers');
@@ -6,10 +7,27 @@ const {
 const userRoutes = express.Router();
 
 userRoutes.get('/', getUsers);
+
 userRoutes.get('/me', aboutMe);
-userRoutes.get('/:id', getUserById);
-userRoutes.patch('/me', patchUser);
-userRoutes.patch('/me/avatar', patchUserAvatar);
+
+userRoutes.get('/:id', celebrate({
+  params: Joi.object().keys({
+    cardId: Joi.string().alphanum(),
+  }),
+}), getUserById);
+
+userRoutes.patch('/me', celebrate({
+  body: Joi.object().keys({
+    name: Joi.string().required().min(2).max(30),
+    about: Joi.string().required().min(2).max(30),
+  }),
+}), patchUser);
+
+userRoutes.patch('/me/avatar', celebrate({
+  body: Joi.object().keys({
+    avatar: Joi.string().regex(/^(https?:\/\/)?([\w-]{1,32}\.[\w-]{1,32})[^\s@]*/),
+  }),
+}), patchUserAvatar);
 
 module.exports = {
   userRoutes,

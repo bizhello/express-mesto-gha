@@ -1,25 +1,54 @@
-const fncCstErrors = (err, res) => {
-  if (err.name === 'ValidationError') {
-    res.status(400).send({ message: 'Данные не валидны' });
-  } else if (err.name === 'CastError') {
-    res.status(404).send({ message: 'Пользователь с таким id не найден' });
-  } else if (err.message === 'Такой пользователь уже существует') {
-    res.status(409).send({ message: 'Такой пользователь уже существует' });
-  } else if (err.code === 11000) {
-    res.status(409).send({ message: 'Такой пользователь уже существует' });
-  } else if (err.message === 'Неправильно указан логин и/или пароль!') {
-    res.status(401).send({ message: 'Неправильно указан логин и/или пароль' });
-  } else if (err.code === 'ERR_HTTP_HEADERS_SENT') {
-    res.status(401).send({ message: 'Необходима регистрация' });
-  } else if (err.message === 'Необходима регистрация') {
-    res.status(401).send({ message: 'Необходима регистрация' });
-  } else {
-    res.status(500).send({ message: err.message });
-  }
+// eslint-disable-next-line max-classes-per-file
+const errorHandler = (err, req, res, next) => {
+  const statusCode = err.statusCode || 500;
+  const message = statusCode === 500 ? 'На сервере произошла ошибка' : err.message;
+  res.status(statusCode).send({ message });
+  next();
 };
 
-const notFound = 404;
+class BadRequestError extends Error {
+  constructor(message) {
+    super(message);
+    this.statusCode = 400;
+  }
+}
+class ValidationError extends Error {
+  constructor(message) {
+    super(message);
+    this.statusCode = 400;
+  }
+}
+class Unauthorized extends Error {
+  constructor(message) {
+    super(message);
+    this.statusCode = 401;
+  }
+}
+class Forbidden extends Error {
+  constructor(message) {
+    super(message);
+    this.statusCode = 403;
+  }
+}
+class NotFoundError extends Error {
+  constructor(message) {
+    super(message);
+    this.statusCode = 404;
+  }
+}
+class Conflict extends Error {
+  constructor(message) {
+    super(message);
+    this.statusCode = 409;
+  }
+}
+
 module.exports = {
-  fncCstErrors,
-  notFound,
+  errorHandler,
+  BadRequestError,
+  ValidationError,
+  Unauthorized,
+  NotFoundError,
+  Conflict,
+  Forbidden,
 };

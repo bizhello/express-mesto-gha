@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
-require('mongoose-type-url');
+const { isURL } = require('validator');
 
-const { ObjectId, Url } = mongoose.Schema.Types;
+const { ObjectId } = mongoose.Schema.Types;
 const cardSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -10,13 +10,13 @@ const cardSchema = new mongoose.Schema({
     maxlength: [30, 'Максимальная длина 30 символов'],
   },
   link: {
-    type: Url,
+    type: String,
+    validate: { validator: isURL, message: 'Link is invalid' },
     required: true,
   },
   owner: {
-    // type: ObjectId,\
-    type: String,
-    // ref: 'user',
+    type: ObjectId,
+    ref: 'user',
     require: true,
   },
   likes: [{

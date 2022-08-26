@@ -1,5 +1,5 @@
 const { isAuthorized } = require('../../utils/jwt');
-const { fncCstErrors } = require('../../utils/errors');
+const { Unauthorized } = require('../../utils/errors');
 
 module.exports = async (req, res, next) => {
   try {
@@ -10,9 +10,9 @@ module.exports = async (req, res, next) => {
       };
       next();
     } else {
-      res.send({ message: 'Необходима регистрация' });
+      throw new Unauthorized('Необходима регистрация');
     }
-  } catch (err) {
-    fncCstErrors(err);
+  } catch (error) {
+    next(error);
   }
 };
