@@ -25,13 +25,6 @@ app.disable('x-powered-by');
 const { PORT = 3000 } = process.env;
 
 app.use(express.json());
-app.use((req, res, next) => {
-  req.user = {
-    _id: '6305e434a891e7ce857e0b54',
-  };
-
-  next();
-});
 app.use(limiter);
 app.use(helmet());
 app.use(cookieParser());
