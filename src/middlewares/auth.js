@@ -13,10 +13,6 @@ module.exports = async (req, res, next) => {
       throw new UnauthorizedError('Ошибка авторизации');
     }
   } catch (error) {
-    if (error.statusCode === 401) {
-      next(new UnauthorizedError('Ошибка авторизации'));
-    } else {
-      next(error);
-    }
+    next(new UnauthorizedError('Ошибка авторизации'));
   }
 };

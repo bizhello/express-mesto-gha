@@ -56,7 +56,16 @@ async function createUser(req, res, next) {
   }
 }
 
+async function signout(req, res, next) {
+  try {
+    res.clearCookie('jwt').send({ message: 'Выход' });
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
   login,
   createUser,
+  signout,
 };

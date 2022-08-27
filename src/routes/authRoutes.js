@@ -3,8 +3,9 @@ const { celebrate, Joi } = require('celebrate');
 
 const authRoutes = express.Router();
 const {
-  createUser, login,
+  createUser, login, signout,
 } = require('../controller/authControllers');
+const { regexUrl } = require('../../utils/regexs');
 
 authRoutes.post('/signup', celebrate({
   body: Joi.object().keys({
@@ -12,7 +13,7 @@ authRoutes.post('/signup', celebrate({
     password: Joi.string().required(),
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
-    avatar: Joi.string().regex(/^(https?:\/\/)?([\w-]{1,32}\.[\w-]{1,32})[^\s@]*/),
+    avatar: Joi.string().regex(regexUrl),
   }),
 }), createUser);
 
@@ -22,6 +23,8 @@ authRoutes.post('/signin', celebrate({
     password: Joi.string().required(),
   }),
 }), login);
+
+authRoutes.get('/signout', signout);
 
 module.exports = {
   authRoutes,
