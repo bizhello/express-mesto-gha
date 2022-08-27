@@ -7,7 +7,7 @@ const helmet = require('helmet');
 const { errors } = require('celebrate');
 
 const { routes } = require('./src/routes/index');
-const { errorHandler } = require('./utils/errors');
+const { errorHandler } = require('./utils/errors/errorHandler');
 
 dotenv.config();
 

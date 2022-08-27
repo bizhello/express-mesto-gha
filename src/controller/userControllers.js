@@ -1,8 +1,7 @@
 const { User } = require('../models/userModels');
-const {
-  ValidationError,
-  NotFoundError,
-} = require('../../utils/errors');
+
+const { NotFoundError } = require('../../utils/errors/NotFoundError');
+const { BadRequestError } = require('../../utils/errors/BadRequestError');
 
 async function getUsers(req, res, next) {
   try {
@@ -15,11 +14,11 @@ async function getUsers(req, res, next) {
 
 async function getUserById(req, res, next) {
   try {
-    const user = await User.findById(req.params.id).orFail();
+    const user = await User.findById(req.params.id).orFail(() => new NotFoundError('Пользователь с указанным id не существует'));
     res.send(user);
   } catch (error) {
     if (error.name === 'CastError') {
-      next(new NotFoundError('Пользователь с таким id не найден'));
+      next(new BadRequestError('Пользователь с таким id не найден'));
     } else {
       next(error);
     }
@@ -28,14 +27,14 @@ async function getUserById(req, res, next) {
 
 async function patchUser(req, res, next) {
   try {
-    await User.findOneAndUpdate(req.user, req.body, {
+    await User.findOneAndUpdate({ _id: req.user._id }, req.body, {
       new: true,
       runValidators: true,
     });
     res.send({ message: 'Данные успешно изменены' });
   } catch (error) {
     if (error.name === 'ValidationError') {
-      next(new ValidationError('Введены некорректные данные'));
+      next(new BadRequestError('Введены некорректные данные'));
     } else {
       next(error);
     }
@@ -44,14 +43,14 @@ async function patchUser(req, res, next) {
 
 async function patchUserAvatar(req, res, next) {
   try {
-    await User.findOneAndUpdate(req.user, req.body, {
+    await User.findOneAndUpdate({ _id: req.user._id }, req.body, {
       runValidators: true,
       new: true,
     });
     res.send({ message: 'Данные успешно изменены' });
   } catch (error) {
     if (error.name === 'ValidationError') {
-      next(new ValidationError('Введены некорректные данные'));
+      next(new BadRequestError('Введены некорректные данные'));
     } else {
       next(error);
     }
@@ -60,13 +59,14 @@ async function patchUserAvatar(req, res, next) {
 
 async function aboutMe(req, res, next) {
   try {
-    const user = await User.findById(req.user._id);
-    if (!user) {
-      throw new NotFoundError('Пользователь с таким id не найден');
-    }
+    const user = await User.findById(req.user._id).orFail(() => new NotFoundError('Пользователь с таким id не найден'));
     res.send(user);
   } catch (error) {
-    next(error);
+    if (error.name === 'CastError') {
+      next(new BadRequestError('Пользователь с таким id не найден'));
+    } else {
+      next(error);
+    }
   }
 }
 

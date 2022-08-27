@@ -1,7 +1,10 @@
 const bcrypt = require('bcrypt');
 
 const { User } = require('../models/userModels');
-const { Unauthorized, Conflict, ValidationError } = require('../../utils/errors');
+const { UnauthorizedError } = require('../../utils/errors/UnauthorizedError');
+const { ConflictError } = require('../../utils/errors/ConflictError');
+const { BadRequestError } = require('../../utils/errors/BadRequestError');
+
 const { getJwtToken } = require('../../utils/jwt');
 
 const SALT_ROUNDS = 10;
@@ -11,11 +14,11 @@ async function login(req, res, next) {
     const { email, password } = req.body;
     const user = await User.findOne({ email }).select('+password');
     if (!user) {
-      throw new Unauthorized('Неправильно указан логин и/или пароль!');
+      throw new UnauthorizedError('Неправильно указан логин и/или пароль!');
     }
     const match = await bcrypt.compare(password, user.password);
     if (!match) {
-      throw new Unauthorized('Неправильно указан логин и/или пароль!');
+      throw new UnauthorizedError('Неправильно указан логин и/или пароль!');
     }
     const token = getJwtToken(user.id);
     res
@@ -38,19 +41,15 @@ async function createUser(req, res, next) {
     const newUser = await User.create({
       email, password: hash, name, about, avatar,
     });
-    newUser.validate((err) => {
-      if (err) {
-        res.status(400).send({ message: 'Введены некорректные данные' });
-      } else {
-        newUser.save();
-        res.send({ message: 'Пользователь создан' });
-      }
+    newUser.validate(() => {
+      newUser.save();
+      res.send({ message: 'Пользователь создан' });
     });
   } catch (error) {
     if (error.code === 11000) {
-      next(new Conflict('Пользователь с таким email уже существует'));
+      next(new ConflictError('Пользователь с таким email уже существует'));
     } else if (error.name === 'ValidationError') {
-      next(new ValidationError('Введены некорректные данные'));
+      next(new BadRequestError('Введены некорректные данные'));
     } else {
       next(error);
     }

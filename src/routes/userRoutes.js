@@ -12,7 +12,7 @@ userRoutes.get('/me', aboutMe);
 
 userRoutes.get('/:id', celebrate({
   params: Joi.object().keys({
-    cardId: Joi.string().alphanum(),
+    id: Joi.string().length(24).hex().required(),
   }),
 }), getUserById);
 

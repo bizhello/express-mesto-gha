@@ -12,24 +12,24 @@ cardRoutes.post('/', celebrate({
   body: Joi.object().keys({
     name: Joi.string().required().min(2).max(30),
     link: Joi.string().regex(/^(https?:\/\/)?([\w-]{1,32}\.[\w-]{1,32})[^\s@]*/),
-  }).unknown(true),
+  }),
 }), postCards);
 
 cardRoutes.delete('/:cardId', celebrate({
   params: Joi.object().keys({
-    cardId: Joi.string().alphanum(),
+    cardId: Joi.string().length(24).hex().required(),
   }),
 }), deleteCards);
 
 cardRoutes.put('/:cardId/likes', celebrate({
   params: Joi.object().keys({
-    cardId: Joi.string().alphanum(),
+    cardId: Joi.string().length(24).hex().required(),
   }),
 }), likeCard);
 
 cardRoutes.delete('/:cardId/likes', celebrate({
   params: Joi.object().keys({
-    cardId: Joi.string().alphanum(),
+    cardId: Joi.string().length(24).hex().required(),
   }),
 }), dislikeCard);
 

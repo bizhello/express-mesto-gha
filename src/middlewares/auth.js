@@ -1,5 +1,5 @@
 const { isAuthorized } = require('../../utils/jwt');
-const { Unauthorized } = require('../../utils/errors');
+const { Unauthorized } = require('../../utils/errors/errorHandler');
 
 module.exports = async (req, res, next) => {
   try {

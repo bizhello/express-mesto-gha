@@ -1,6 +1,6 @@
-const { NotFoundError } = require('../../utils/errors');
+const { NotFoundError } = require('../../utils/errors/NotFoundError');
 
-async function route(req, res, next) {
+async function routeSecurity(req, res, next) {
   try {
     throw new NotFoundError('Запрашиваемый ресурс не найден');
   } catch (error) {
@@ -9,5 +9,5 @@ async function route(req, res, next) {
 }
 
 module.exports = {
-  route,
+  routeSecurity,
 };
