@@ -27,11 +27,11 @@ async function getUserById(req, res, next) {
 
 async function patchUser(req, res, next) {
   try {
-    await User.findOneAndUpdate({ _id: req.user._id }, req.body, {
+    const user = await User.findOneAndUpdate({ _id: req.user._id }, req.body, {
       new: true,
       runValidators: true,
     });
-    res.send({ message: 'Данные успешно изменены' });
+    res.send(user);
   } catch (error) {
     if (error.name === 'ValidationError') {
       next(new BadRequestError('Введены некорректные данные'));
@@ -43,11 +43,11 @@ async function patchUser(req, res, next) {
 
 async function patchUserAvatar(req, res, next) {
   try {
-    await User.findOneAndUpdate({ _id: req.user._id }, req.body, {
+    const user = await User.findOneAndUpdate({ _id: req.user._id }, req.body, {
       runValidators: true,
       new: true,
     });
-    res.send({ message: 'Данные успешно изменены' });
+    res.send(user);
   } catch (error) {
     if (error.name === 'ValidationError') {
       next(new BadRequestError('Введены некорректные данные'));

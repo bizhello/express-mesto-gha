@@ -1,5 +1,5 @@
 const { isAuthorized } = require('../../utils/jwt');
-const { Unauthorized } = require('../../utils/errors/errorHandler');
+const { UnauthorizedError } = require('../../utils/errors/UnauthorizedError');
 
 module.exports = async (req, res, next) => {
   try {
@@ -10,9 +10,13 @@ module.exports = async (req, res, next) => {
       };
       next();
     } else {
-      throw new Unauthorized('Необходима регистрация');
+      throw new UnauthorizedError('Ошибка авторизации');
     }
   } catch (error) {
-    next(error);
+    if (error.statusCode === 401) {
+      next(new UnauthorizedError('Ошибка авторизации'));
+    } else {
+      next(error);
+    }
   }
 };

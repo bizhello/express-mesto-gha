@@ -16,10 +16,8 @@ async function postCards(req, res, next) {
   try {
     const card = new Card(req.body);
     card.owner = req.user._id;
-    card.validate(() => {
-      card.save();
-      res.send(card);
-    });
+    await card.save();
+    res.send(card);
   } catch (error) {
     if (error.name === 'ValidationError') {
       next(new BadRequestError('Некорректные данные при создании карточки'));
@@ -34,7 +32,7 @@ async function deleteCards(req, res, next) {
     const card = await Card.findById(req.params.cardId);
     if (card === null) {
       throw new NotFoundError('Карточка была уже удалена');
-    } else if (req.user._id === card.owner) { // РАБОТАЕТ С == //
+    } else if (req.user._id === String(card.owner)) {
       await Card.deleteOne({ _id: req.params.cardId });
       res.send({ message: 'Карточка удалена' });
     } else {
@@ -47,15 +45,12 @@ async function deleteCards(req, res, next) {
 
 async function likeCard(req, res, next) {
   try {
-    const card = await Card.findById(req.params.cardId);
-    if (card) {
-      await Card.findByIdAndUpdate(
-        req.params.cardId,
-        { $addToSet: { likes: req.user._id } },
-        { new: true },
-      ).orFail(() => new NotFoundError('Пользователь с указанным id не существует'));
-      res.send({ message: 'Лайк поставлен' });
-    }
+    await Card.findByIdAndUpdate(
+      req.params.cardId,
+      { $addToSet: { likes: req.user._id } },
+      { new: true },
+    ).orFail(() => new NotFoundError('Пользователь с указанным id не существует'));
+    res.send({ message: 'Лайк поставлен' });
   } catch (error) {
     if (error.name === 'CastError') {
       next(new BadRequestError('Данные по этому id не найдены'));
@@ -67,15 +62,12 @@ async function likeCard(req, res, next) {
 
 async function dislikeCard(req, res, next) {
   try {
-    const card = await Card.findById(req.params.cardId);
-    if (card) {
-      await Card.findByIdAndUpdate(
-        req.params.cardId,
-        { $pull: { likes: req.user._id } },
-        { new: true },
-      ).orFail(() => new NotFoundError('Пользователь с указанным id не существует'));
-      res.send({ message: 'Лайк убран' });
-    }
+    await Card.findByIdAndUpdate(
+      req.params.cardId,
+      { $pull: { likes: req.user._id } },
+      { new: true },
+    ).orFail(() => new NotFoundError('Пользователь с указанным id не существует'));
+    res.send({ message: 'Лайк убран' });
   } catch (error) {
     if (error.name === 'CastError') {
       next(new BadRequestError('Данные по этому id не найдены'));

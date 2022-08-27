@@ -41,9 +41,9 @@ async function createUser(req, res, next) {
     const newUser = await User.create({
       email, password: hash, name, about, avatar,
     });
-    newUser.validate(() => {
-      newUser.save();
-      res.send({ message: 'Пользователь создан' });
+    const dataUser = await newUser.save();
+    res.send({
+      email, name: dataUser.name, about: dataUser.about, avatar: dataUser.avatar,
     });
   } catch (error) {
     if (error.code === 11000) {
